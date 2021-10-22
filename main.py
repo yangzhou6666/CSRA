@@ -10,6 +10,7 @@ from pipeline.dataset import DataSet
 from utils.evaluation.eval import evaluation
 from utils.evaluation.warmUpLR import WarmUpLR
 from tqdm import tqdm
+import os
 
 
 # modify for wider dataset and vit models
@@ -22,8 +23,8 @@ def Args():
     parser.add_argument("--lam",default=0.1, type=float)
     parser.add_argument("--cutmix", default=None, type=str) # the path to load cutmix-pretrained backbone
     # dataset
-    parser.add_argument("--dataset", default="voc07", type=str)
-    parser.add_argument("--num_cls", default=20, type=int)
+    parser.add_argument("--dataset", default="food103", type=str)
+    parser.add_argument("--num_cls", default=103, type=int)
     parser.add_argument("--train_aug", default=["randomflip", "resizedcrop"], type=list)
     parser.add_argument("--test_aug", default=[], type=list)
     parser.add_argument("--img_size", default=448, type=int)
@@ -35,6 +36,7 @@ def Args():
     parser.add_argument("--warmup_epoch", default=2, type=int)
     parser.add_argument("--total_epoch", default=30, type=int)
     parser.add_argument("--print_freq", default=100, type=int)
+    parser.add_argument("--save_folder", type=str)
     args = parser.parse_args()
     return args
     
@@ -102,7 +104,9 @@ def val(i, args, model, test_loader, test_file):
 
 def main():
     args = Args()
-
+    if not os.path.exists("checkpoint/{}".format(args.save_folder)):
+        os.makedirs("checkpoint/{}".format(args.save_folder))
+        
     # model
     if args.model == "resnet101": 
         model = ResNet_CSRA(num_heads=args.num_heads, lam=args.lam, num_classes=args.num_cls, cutmix=args.cutmix)
@@ -120,6 +124,10 @@ def main():
     if args.dataset == "voc07":
         train_file = ["data/voc07/trainval_voc07.json"]
         test_file = ['data/voc07/test_voc07.json']
+        step_size = 4
+    if args.dataset == "food103":
+        train_file = ["data/food103/trainval.json"]
+        test_file = ["data/food103/trainval.json"]
         step_size = 4
     if args.dataset == "coco":
         train_file = ['data/coco/train_coco2014.json']
@@ -160,7 +168,7 @@ def main():
     # training and validation
     for i in range(1, args.total_epoch + 1):
         train(i, args, model, train_loader, optimizer, warmup_scheduler)
-        torch.save(model.state_dict(), "checkpoint/{}/epoch_{}.pth".format(args.model, i))
+        torch.save(model.state_dict(), "checkpoint/{}/epoch_{}.pth".format(args.save_folder, i))
         val(i, args, model, test_loader, test_file)
         scheduler.step()
 
