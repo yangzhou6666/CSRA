@@ -68,6 +68,11 @@ utils/demo_images/000002.jpg prediction: train,
 ```
 
 
+```shell
+CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset food_103 --load_from checkpoint/resnet101/epoch_30.pth --img_dir data/food_public/img_dir/train
+```
+
+
 ## Validation
 We provide pretrained models on [Google Drive](https://www.google.com/drive/) for validation. ResNet101 trained on ImageNet with **CutMix** augmentation can be downloaded 
 [here](https://drive.google.com/u/0/uc?export=download&confirm=kYfp&id=1T4AxsAO2tszvhn62KFN5kaknBtBZIpDV).
@@ -95,11 +100,23 @@ CUDA_VISIBLE_DEVICES=0 python val.py --model vit_L16_224 --img_size 224 --num_he
 ```
 To provide pretrained VIT models on Wider-Attribute dataset, we retrain them recently, which has a slightly different performance (~0.1%mAP) from what has been presented in our paper. The structure of the VIT models is the initial VIT version (**An image is worth 16x16 words: Transformers for image recognition at scale**, [link](https://arxiv.org/pdf/2010.11929.pdf)) and the implementation code of the VIT models is derived from [http://github.com/rwightman/pytorch-image-models/](http://github.com/rwightman/pytorch-image-models/).
 ## Training
+
+#### Food103
+You can run either of these two lines below 
+```shell
+CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 --num_cls 103
+CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 --num_cls 103 --cutmix models/resnet101_cutmix_pretrained.pth 2>&1 | tee cutmix_train.log
+CUDA_VISIBLE_DEVICES=4,5 python main.py --model vit_L16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 2>&1 | tee vit_L16_224_train_size_224.log
+CUDA_VISIBLE_DEVICES=0 python main.py --model vit_B16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 --save_folder vit_B16_224_img_size_224
+```
+
+
+
 #### VOC2007
 You can run either of these two lines below 
 ```shell
 CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20 --cutmix CutMix_ResNet101.pth
+CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20 --cutmix models/resnet101_cutmix_pretrained.pth
 ```
 Note that the first command uses the Official ResNet-101 backbone while the second command uses the ResNet-101 pretrained on ImageNet with CutMix augmentation
 [link](https://drive.google.com/u/0/uc?export=download&confirm=kYfp&id=1T4AxsAO2tszvhn62KFN5kaknBtBZIpDV) (which is supposed to gain better performance).
