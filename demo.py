@@ -27,12 +27,12 @@ def Args():
     parser.add_argument("--model", default="resnet101", type=str)
     parser.add_argument("--num_heads", default=1, type=int)
     parser.add_argument("--lam",default=0.1, type=float)
-    parser.add_argument("--load_from", default="models_local/resnet101_voc07_head1_lam0.1_94.7.pth", type=str)
+    parser.add_argument("--load_from", default="checkpoint/resnet101/epoch_30.pth", type=str)
     parser.add_argument("--img_dir", default="images/", type=str)
 
     # dataset
-    parser.add_argument("--dataset", default="voc07", type=str)
-    parser.add_argument("--num_cls", default=20, type=int)
+    parser.add_argument("--dataset", default="food_103", type=str)
+    parser.add_argument("--num_cls", default=103, type=int)
 
     args = parser.parse_args()
     return args
@@ -81,7 +81,8 @@ def demo():
 
         pos = torch.where(logit > 0.5)[0].cpu().numpy()
         for k in pos:
-            print(class_dict[args.dataset][k], end=",")
+            print(k+1, end=',')
+            # print(class_dict[args.dataset][k], end=",")
         print()
 
 
