@@ -15,6 +15,11 @@ wujx2001@gmail.com).
 - pycocotools 2.0
 - tqdm 4.49.0, pillow 7.2.0
 
+
+```
+docker run --name=multi-label --gpus all --shm-size 16G -it --mount type=bind,src=/mnt/DGX-1-Vol01/ferdiant/zyang/cv_course,dst=/workspace pytorch/pytorch:1.6.0-cuda10.1-cudnn7-devel
+```
+
 ## Dataset
 We expect VOC2007, COCO2014 and Wider-Attribute dataset to have the following structure:
 ```
@@ -52,7 +57,7 @@ which will automatically result in annotation json files in *./data/voc07*, *./d
 ## Demo
 We provide prediction demos of our models. The demo images (picked from VCO2007) have already been put into *./utils/demo_images/*, you can simply run demo.py by using our CSRA models pretrained on VOC2007:
 ```shell
-CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset voc07 --load_from OUR_VOC_PRETRAINED.pth --img_dir utils/demo_images
+CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset voc07 --load_from models/resnet101_voc07_head1_lam0.1_94.7.pth --img_dir utils/demo_images
 ```
 which will output like this:
 ```shell
