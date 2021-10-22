@@ -29,10 +29,13 @@ wider_classes = (
                 "Male","longHair","sunglass","Hat","Tshiirt","longSleeve","formal",
                 "shorts","jeans","longPants","skirt","faceMask", "logo","stripe")
 
+food103_classes = [0] * 103
+
 class_dict = {
     "voc07": voc_classes,
     "coco": coco_classes,
     "wider": wider_classes,
+    "food103": food103_classes
 }
 
 
