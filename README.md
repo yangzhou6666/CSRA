@@ -72,6 +72,18 @@ utils/demo_images/000002.jpg prediction: train,
 CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset food_103 --load_from checkpoint/resnet101/epoch_30.pth --img_dir data/food_public/img_dir/train
 ```
 
+```shell
+CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset food_103 --load_from checkpoint/resnet101/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee entry_2_cutmix.log
+```
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 6 --lam 0.4 --dataset food_103 --load_from checkpoint/heads_6_lam_4/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee entry_2_heads_6.log
+```
+
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python demo.py --model vit_B16_224 --num_heads 1 --lam 0.3 --dataset food_103 --load_from checkpoint/vit_B16_224_img_size_224/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee vit_B16_224_img_size_224.log
+```
 
 ## Validation
 We provide pretrained models on [Google Drive](https://www.google.com/drive/) for validation. ResNet101 trained on ImageNet with **CutMix** augmentation can be downloaded 
@@ -108,6 +120,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 
 CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 --num_cls 103 --cutmix models/resnet101_cutmix_pretrained.pth 2>&1 | tee cutmix_train.log
 CUDA_VISIBLE_DEVICES=4,5 python main.py --model vit_L16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 2>&1 | tee vit_L16_224_train_size_224.log
 CUDA_VISIBLE_DEVICES=0 python main.py --model vit_B16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 --save_folder vit_B16_224_img_size_224
+CUDA_VISIBLE_DEVICES=5 python main.py --num_heads 6 --lam 0.4 --dataset food103 --num_cls 103 --cutmix models/resnet101_cutmix_pretrained.pth --save_folder heads_6_lam_4 2>&1 | tee save_folder heads_6_lam_4.log
 ```
 
 
