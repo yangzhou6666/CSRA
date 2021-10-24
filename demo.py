@@ -80,6 +80,9 @@ def demo():
 
 
         pos = torch.where(logit > 0.5)[0].cpu().numpy()
+        if len(pos) == 0:
+            idx_of_max = logit.argmax().cpu().numpy()
+            print(idx_of_max+1, end=',')
         for k in pos:
             print(k+1, end=',')
             # print(class_dict[args.dataset][k], end=",")
