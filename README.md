@@ -1,164 +1,70 @@
 # CSRA 
-This is the official code of ICCV 2021 paper:<br>
-[Residual Attention: A Simple But Effective Method for Multi-Label Recoginition](https://arxiv.org/abs/2108.02456)<br>
 
-![attention](https://github.com/Kevinz-code/CSRA/blob/master/utils/pipeline.PNG)
+This repo is for the Part 1.
 
-### Demo, Train and Validation code have been released! (including VIT on Wider-Attribute)
-This package is developed by Mr. Ke Zhu (http://www.lamda.nju.edu.cn/zhuk/) and we have just finished the implementation code of ViT models. If you have any question about the code, please feel free to contact Mr. Ke Zhu (zhuk@lamda.nju.edu.cn). The package is free for academic usage. You can run it at your own risk. For other purposes, please contact Prof. Jianxin Wu (mail to 
-wujx2001@gmail.com).
-
-## Requirements
-- Python 3.7
-- pytorch 1.6
-- torchvision 0.7.0
-- pycocotools 2.0
-- tqdm 4.49.0, pillow 7.2.0
-
+## Environment Configuration
 
 ```
-docker run --name=multi-label --gpus all --shm-size 16G -it --mount type=bind,src=/mnt/DGX-1-Vol01/ferdiant/zyang/cv_course,dst=/workspace pytorch/pytorch:1.6.0-cuda10.1-cudnn7-devel
+docker pull zhouyang996/csra
+docker run --name=multi-label --gpus all --shm-size 16G -it --mount type=bind,src=path_to_CSRA_folder,dst=/workspace zhouyang996/csra
 ```
 
 ## Dataset
-We expect VOC2007, COCO2014 and Wider-Attribute dataset to have the following structure:
-```
-Dataset/
-|-- VOCdevkit/
-|---- VOC2007/
-|------ JPEGImages/
-|------ Annotations/
-|------ ImageSets/
-......
-|-- COCO2014/
-|---- annotations/
-|---- images/
-|------ train2014/
-|------ val2014/
-......
-|-- WIDER/
-|---- Annotations/
-|------ wider_attribute_test.json
-|------ wider_attribute_trainval.json
-|---- Image/
-|------ train/
-|------ val/
-|------ test/
-...
-```
-Then directly run the following command to generate json file (for implementation) of these datasets.
-```shell
-python utils/prepare/voc.py  --data_path  Dataset/VOCdevkit
-python utils/prepare/coco.py --data_path  Dataset/COCO2014
-python utils/prepare/wider.py --data_path Dataset/WIDER
-```
-which will automatically result in annotation json files in *./data/voc07*, *./data/coco* and *./data/wider*
+I've preprocessed the dataset, which can be downloaded from [Google Drive](https://drive.google.com/file/d/1dW0fq9CZ5bcV4ExU1qX5cMI450Y0rGKX/view?usp=sharing).
 
-## Demo
-We provide prediction demos of our models. The demo images (picked from VCO2007) have already been put into *./utils/demo_images/*, you can simply run demo.py by using our CSRA models pretrained on VOC2007:
-```shell
-CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset voc07 --load_from models/resnet101_voc07_head1_lam0.1_94.7.pth --img_dir utils/demo_images
+After downloading it to the root folder, you can decompress using
+
 ```
-which will output like this:
-```shell
-utils/demo_images/000001.jpg prediction: dog,person,
-utils/demo_images/000004.jpg prediction: car,
-utils/demo_images/000002.jpg prediction: train,
-...
+tar -xvf food103.tar
+```
+
+THe structure should be like this:
+
+```
+|-- data
+|   |-- food103
+|   |   `-- trainval.json
+|   `-- food_public
+|       |-- img_dir
+|       |   |-- test1
+|       |   |   |-- 00004404.jpg
+|       |   |   |-- 00004405.jpg
+|       |   |   |-- 00004419.jpg
+|       |   |   `-- 00007108.jpg
+|       |   `-- train
+|       |       |-- 00000000.jpg
+|       |       |-- 00000001.jpg
+|       |       |-- 00000002.jpg
+|       |       |-- 00000003.jpg
+|       |       |-- 00000004.jpg
 ```
 
 
-```shell
-CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset food_103 --load_from checkpoint/resnet101/epoch_30.pth --img_dir data/food_public/img_dir/train
-```
+## Evaluation
+You can download the current best-performing models from [Google Drive](https://drive.google.com/file/d/1dg4F1zVW3TT_T49Gi-uY_gPrW-k0MUiR/view?usp=sharing), and put it under: `./checkpoint/vit_B16_224_img_size_224/`.
 
-```shell
-CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 1 --lam 0.1 --dataset food_103 --load_from checkpoint/resnet101/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee entry_2_cutmix.log
-```
-
-```shell
-CUDA_VISIBLE_DEVICES=0 python demo.py --model resnet101 --num_heads 6 --lam 0.4 --dataset food_103 --load_from checkpoint/heads_6_lam_4/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee entry_2_heads_6.log
-```
-
+Then, you can use the following command to test this model on new datasets.
 
 ```shell
 CUDA_VISIBLE_DEVICES=0 python demo.py --model vit_B16_224 --num_heads 1 --lam 0.3 --dataset food_103 --load_from checkpoint/vit_B16_224_img_size_224/epoch_30.pth --img_dir data/food_public/img_dir/test1 2>&1 | tee vit_B16_224_img_size_224.log
 ```
 
-## Validation
-We provide pretrained models on [Google Drive](https://www.google.com/drive/) for validation. ResNet101 trained on ImageNet with **CutMix** augmentation can be downloaded 
-[here](https://drive.google.com/u/0/uc?export=download&confirm=kYfp&id=1T4AxsAO2tszvhn62KFN5kaknBtBZIpDV).
-|Dataset      | Backbone  |   Head nums   |   mAP(%)  |  Resolution     | Download   |
-|  ---------- | -------   |  :--------:   | ------ |  :---:          | --------   |
-| VOC2007     |ResNet-101 |     1         |  94.7  |  448x448 |[download](https://drive.google.com/u/0/uc?export=download&confirm=bXcv&id=1cQSRI_DWyKpLa0tvxltoH9rM4IZMIEWJ)   |
-| VOC2007     |ResNet-cut |     1         |  95.2  |  448x448 |[download](https://drive.google.com/u/0/uc?export=download&confirm=otx_&id=1bzSsWhGG-zUNQRMB7rQCuPMqLZjnrzFh)  |
-| COCO        |ResNet-101 |     4         |  83.3  |  448x448 |[download](https://drive.google.com/u/0/uc?export=download&confirm=EWtH&id=1e_WzdVgF_sQc--ubN-DRnGVbbJGSJEZa)   |
-| COCO        |ResNet-cut |     6         |  85.6  |  448x448 |[download](https://drive.google.com/u/0/uc?export=download&confirm=uEcu&id=17FgLUe_vr5sJX6_TT-MPdP5TYYAcVEPF)   |
-| Wider       |VIT_B16_224|     1         |  89.0  |  224x224 |[download](https://drive.google.com/u/0/uc?id=1qkJgWQ2EOYri8ITLth_wgnR4kEsv0bfj&export=download)   |
-| Wider       |VIT_L16_224|     1         |  90.2  |  224x224 |[download](https://drive.google.com/u/0/uc?id=1da8D7UP9cMCgKO0bb1gyRvVqYoZ3Wh7O&export=download)   |
+You can open the `vit_B16_224_img_size_224.log` file and do some necessary changes (manually) to meet the submission requirements.
 
-For voc2007, run the following validation example:
-```shell
-CUDA_VISIBLE_DEVICES=0 python val.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20  --load_from MODEL.pth
-```
-For coco2014, run the following validation example:
-```shell
-CUDA_VISIBLE_DEVICES=0 python val.py --num_heads 4 --lam 0.5 --dataset coco --num_cls 80  --load_from MODEL.pth
-```
-For wider attribute with ViT models, run the following
-```shell
-CUDA_VISIBLE_DEVICES=0 python val.py --model vit_B16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset wider --num_cls 14  --load_from ViT_B16_MODEL.pth
-CUDA_VISIBLE_DEVICES=0 python val.py --model vit_L16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset wider --num_cls 14  --load_from ViT_L16_MODEL.pth
-```
-To provide pretrained VIT models on Wider-Attribute dataset, we retrain them recently, which has a slightly different performance (~0.1%mAP) from what has been presented in our paper. The structure of the VIT models is the initial VIT version (**An image is worth 16x16 words: Transformers for image recognition at scale**, [link](https://arxiv.org/pdf/2010.11929.pdf)) and the implementation code of the VIT models is derived from [http://github.com/rwightman/pytorch-image-models/](http://github.com/rwightman/pytorch-image-models/).
+### Parameter Tunining
+The 82 line in the `demo.py` specify the threshold. TA suggests us to lower the threshold a bit. You may want to see how it affects the performance at Part 1.
+
+
 ## Training
 
 #### Food103
-You can run either of these two lines below 
+The command for train this model is as follows:
+
 ```shell
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 --num_cls 103
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset food103 --num_cls 103 --cutmix models/resnet101_cutmix_pretrained.pth 2>&1 | tee cutmix_train.log
-CUDA_VISIBLE_DEVICES=4,5 python main.py --model vit_L16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 2>&1 | tee vit_L16_224_train_size_224.log
 CUDA_VISIBLE_DEVICES=0 python main.py --model vit_B16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset food103 --num_cls 103 --save_folder vit_B16_224_img_size_224
-CUDA_VISIBLE_DEVICES=5 python main.py --num_heads 6 --lam 0.4 --dataset food103 --num_cls 103 --cutmix models/resnet101_cutmix_pretrained.pth --save_folder heads_6_lam_4 2>&1 | tee save_folder heads_6_lam_4.log
 ```
 
-
-
-#### VOC2007
-You can run either of these two lines below 
-```shell
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 1 --lam 0.1 --dataset voc07 --num_cls 20 --cutmix models/resnet101_cutmix_pretrained.pth
-```
-Note that the first command uses the Official ResNet-101 backbone while the second command uses the ResNet-101 pretrained on ImageNet with CutMix augmentation
-[link](https://drive.google.com/u/0/uc?export=download&confirm=kYfp&id=1T4AxsAO2tszvhn62KFN5kaknBtBZIpDV) (which is supposed to gain better performance).
-
-#### MS-COCO
-run the ResNet-101 with 4 heads
-```shell
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 6 --lam 0.5 --dataset coco --num_cls 80
-```
-run the ResNet-101 (pretrained with CutMix) with 6 heads
-```shell
-CUDA_VISIBLE_DEVICES=0 python main.py --num_heads 6 --lam 0.4 --dataset coco --num_cls 80 --cutmix CutMix_ResNet101.pth
-```
-You can feel free to adjust the hyper-parameters such as number of attention heads (--num_heads), or the Lambda (--lam). Still, the default values of them in the above command are supposed to be the best.
-
-#### Wider-Attribute
-run the VIT_B16_224 with 1 heads
-```shell
-CUDA_VISIBLE_DEVICES=0 python main.py --model vit_B16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset wider --num_cls 14
-```
-run the VIT_L16_224 with 1 heads
-```shell
-CUDA_VISIBLE_DEVICES=0,1 python main.py --model vit_L16_224 --img_size 224 --num_heads 1 --lam 0.3 --dataset wider --num_cls 14
-```
-Note that the VIT_L16_224 model consume larger GPU space, so we use 2 GPUs to train them.
-## Notice
-To avoid confusion, please note the **4 lines of code** in Figure 1 (in paper) is only used in **test** stage (without training), which is our motivation. When our model is end-to-end training and testing, **multi-head-attention** (H=1, H=2, H=4, etc.) is used with different T values. Also, when H=1 and T=infty, the implementation code of **multi-head-attention** is exactly the same with Figure 1.
-
-We didn't use any new augmentation such as **Autoaugment, RandAugment** in our ResNet series models.
+You may want to try different parameters, e.g. `--num_heads`. 
 
 ## Acknowledgement
 
